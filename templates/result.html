@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Result | Veritas AI</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            500: '#0ea5e9', // Sky blue
+                            600: '#0284c7',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+            min-height: 100vh;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Dynamic Styling based on Flask Label */
+        /* Assuming label is 'Real' or 'Fake'/'Deepfake' */
+        .result-container.real {
+            --status-color: #22c55e; /* Green-500 */
+            --status-bg: rgba(34, 197, 94, 0.1);
+            --status-border: rgba(34, 197, 94, 0.2);
+        }
+
+        .result-container.fake, 
+        .result-container.deepfake {
+            --status-color: #ef4444; /* Red-500 */
+            --status-bg: rgba(239, 68, 68, 0.1);
+            --status-border: rgba(239, 68, 68, 0.2);
+        }
+        
+        /* Fallback if class is missing */
+        .result-container {
+            --status-color: #0ea5e9;
+            --status-bg: rgba(14, 165, 233, 0.1);
+            --status-border: rgba(14, 165, 233, 0.2);
+        }
+
+        .status-text { color: var(--status-color); }
+        .status-bg { background-color: var(--status-bg); }
+        .status-border { border-color: var(--status-border); }
+        .status-bg-solid { background-color: var(--status-color); }
+    </style>
+</head>
+<body class="text-slate-200 antialiased flex flex-col">
+
+    <!-- Navigation -->
+    <nav class="w-full border-b border-white/10 glass-panel sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-2">
+                    <div class="bg-gradient-to-tr from-brand-500 to-purple-600 p-2 rounded-lg">
+                        <i data-lucide="shield-check" class="text-white w-6 h-6"></i>
+                    </div>
+                    <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Veritas<span class="font-light text-slate-500">.ai</span></span>
+                </div>
+                <a href="/" class="text-sm font-medium text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col items-center justify-center p-4 sm:p-8 relative">
+        
+        <!-- This container gets the class 'real' or 'fake' from Flask to control colors -->
+        <div class="result-container {{ label|lower }} max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+            
+            <!-- Left Column: Image -->
+            <div class="relative group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-brand-500 to-purple-600 rounded-2xl blur opacity-25"></div>
+                <div class="relative glass-panel rounded-xl p-2 h-full flex flex-col">
+                    <div class="relative rounded-lg overflow-hidden bg-slate-900 flex-grow flex items-center justify-center min-h-[300px]">
+                        <img src="{{ image_path }}" alt="Analyzed Image" class="w-full h-full object-contain max-h-[500px]">
+                        
+                        <!-- Overlay Tag -->
+                        <div class="absolute top-4 left-4 px-3 py-1 rounded-full backdrop-blur-md border status-border status-bg text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full status-bg-solid animate-pulse"></span>
+                            Analyzed Image
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="flex flex-col justify-center space-y-8">
+                
+                <div>
+                    <h2 class="text-slate-400 text-sm font-medium uppercase tracking-widest mb-2">Detection Result</h2>
+                    <h1 class="text-5xl font-bold text-white mb-2 status-text">{{ label }}</h1>
+                    <p class="text-slate-400">
+                        Our neural network has analyzed the artifacts and noise patterns of the uploaded image.
+                    </p>
+                </div>
+
+                <!-- Confidence Card -->
+                <div class="glass-panel p-6 rounded-xl border status-border status-bg">
+                    <div class="flex justify-between items-end mb-4">
+                        <div>
+                            <p class="text-slate-300 font-medium">Confidence Score</p>
+                            <p class="text-xs text-slate-500 mt-1">Probability of the prediction being correct</p>
+                        </div>
+                        <span class="text-4xl font-bold text-white">{{ confidence }}<span class="text-2xl text-slate-400">%</span></span>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-slate-800/50 rounded-full h-3 overflow-hidden backdrop-blur-sm">
+                        <div class="h-full status-bg-solid rounded-full transition-all duration-1000" style="width: {{ confidence }}%"></div>
+                    </div>
+                </div>
+
+                <!-- Technical Details (Decorative/Optional) -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-4 rounded-lg bg-white/5 border border-white/5">
+                        <i data-lucide="activity" class="w-5 h-5 text-slate-400 mb-2"></i>
+                        <p class="text-sm font-semibold text-white">Pixel Analysis</p>
+                        <p class="text-xs text-slate-500">Completed</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-white/5 border border-white/5">
+                        <i data-lucide="layers" class="w-5 h-5 text-slate-400 mb-2"></i>
+                        <p class="text-sm font-semibold text-white">Model Version</p>
+                        <p class="text-xs text-slate-500">v2.1.0 (ResNet)</p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="pt-4">
+                    <a href="/" class="group w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-slate-900 hover:bg-slate-200 font-bold py-3.5 px-6 rounded-lg transition-all transform hover:-translate-y-0.5">
+                        <i data-lucide="scan-face" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                        Analyze Another Image
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="border-t border-white/5 py-8 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-slate-500 text-sm">© 2024 Veritas AI Detection. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
